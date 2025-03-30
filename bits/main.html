@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered AR Search</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #0d1117;
+            color: #e0e0e0;
+            margin: 0;
+            text-align: center;
+        }
+
+        #container {
+            width: 90%;
+            max-width: 500px;
+            background: #161b22;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
+            transition: transform 0.3s ease-in-out;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #container:hover {
+            transform: scale(1.02);
+        }
+
+        input {
+            width: 70%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            outline: none;
+            background: #21262d;
+            color: white;
+            text-align: center;
+        }
+        input::placeholder {
+            color: #888;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            color: white;
+            background: #238636;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+        button:hover {
+            background: #2ea043;
+            transform: scale(1.05);
+        }
+
+        #result {
+            margin-top: 20px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+        }
+        #result.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .typing {
+            display: inline-block;
+            white-space: nowrap;
+            overflow: hidden;
+            animation: typing 2s steps(40, end);
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 10px;
+            box-shadow: 0px 3px 8px rgba(0, 255, 255, 0.2);
+        }
+
+        #qr-container {
+            margin-top: 15px;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out 0.3s;
+        }
+        #qr-container.show {
+            opacity: 1;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #58a6ff;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="container">
+        <h2 class="title">🔍 AI-Powered AR Search</h2>
+        <input type="text" id="search" placeholder="Enter keyword (heart, panzer, microscope, telescope, tiger)">
+        <button onclick="searchKeyword()">Search</button>
+        <div id="result"></div>
+        <div id="qr-container"></div>
+    </div>
+
+    <script>
+        const dataset = {
+            "heart": {
+                "image": "heart.png",
+                "explanation": "The heart is a vital organ that pumps blood throughout the body.",
+                "qr": "images/heart_qr.png"
+            },
+            "panzer": {
+                "image": "panzer1.png",
+                "explanation": "The Panzer is a series of German battle tanks used in WWII.",
+                "qr": "images/panzer_qr.png"
+            },
+            "microscope": {
+                "image": "microscope.png",
+                "explanation": "A microscope is an instrument used to magnify small objects.",
+                "qr": "images/microscope_qr.png"
+            },
+            "telescope": {
+                "image": "telescope.png",
+                "explanation": "A telescope is used to observe distant objects in space.",
+                "qr": "images/telescope_qr.png"
+            },
+            "tiger": {
+                "image": "tiger.png",
+                "explanation": "The tiger is a large carnivorous feline known for its orange coat with black stripes.",
+                "qr": "images/tiger_qr.png"
+            },
+            "brain": {
+        "image": "brain.png",
+        "explanation": "The brain is the central organ of the human nervous system, controlling thought, memory, and emotion.",
+        "qr": "images/brain_qr.png"
+           },
+           "lungs": {
+        "image": "lungs.png",
+        "explanation": "The lungs are a pair of spongy organs responsible for oxygen exchange in the body.",
+        "qr": "images/lungs_qr.png"
+          },
+          "liver": {
+        "image": "liver.png",
+        "explanation": "The liver is a vital organ responsible for detoxification, metabolism, and digestion.",
+        "qr": "images/liver_qr.png"
+          },
+    "skull": {
+        "image": "skull.png",
+        "explanation": "The skull is a bony structure that protects the brain and supports the face.",
+        "qr": "images/skull_qr.png"
+          },
+    "kidney": {
+        "image": "kidney.png",
+        "explanation": "The kidneys filter blood, remove waste, and regulate fluid balance in the body.",
+        "qr": "images/kidney_qr.png"
+          },
+    "stomach": {
+        "image": "stomach.png",
+        "explanation": "The stomach is an organ in the digestive system that breaks down food using acids and enzymes.",
+        "qr": "images/stomach_qr.png"
+          },
+          "mouth": {
+        "image": "mouth.png",
+        "explanation": "The mouth is the entry point of the digestive system, responsible for chewing and speech.",
+        "qr": "images/mouth_qr.png"
+    },
+    "ears": {
+        "image": "ears.png",
+        "explanation": "Ears are sensory organs that enable hearing and help with balance.",
+        "qr": "images/ears_qr.png"
+    },
+    "nose": {
+        "image": "nose.png",
+        "explanation": "The nose is responsible for the sense of smell and helps filter air before it reaches the lungs.",
+        "qr": "images/nose_qr.png"
+    },
+    "eyes": {
+        "image": "eyes.png",
+        "explanation": "Eyes are the sensory organs for vision, detecting light and color.",
+        "qr": "images/eyes_qr.png"
+    },
+    "hand": {
+        "image": "hand.png",
+        "explanation": "The hand is a versatile part of the body used for grasping, touching, and interacting with the world.",
+        "qr": "images/hand_qr.png"
+    },
+    "skeleton": {
+        "image": "skeleton.png",
+        "explanation": "The skeleton provides structural support, protects organs, and enables movement.",
+        "qr": "images/skeleton_qr.png"
+    }
+        };
+
+        function searchKeyword() {
+            const keyword = document.getElementById("search").value.toLowerCase();
+            const resultDiv = document.getElementById("result");
+            const qrContainer = document.getElementById("qr-container");
+
+            resultDiv.innerHTML = "";
+            qrContainer.innerHTML = "";
+            resultDiv.classList.remove("show");
+            qrContainer.classList.remove("show");
+
+            if (dataset[keyword]) {
+                const data = dataset[keyword];
+
+                let explanation = data.explanation;
+                let displayText = "";
+                let i = 0;
+
+                resultDiv.innerHTML = `
+                    <img src="${data.image}" alt="${keyword}">
+                    <p class="typing" id="ai-text"></p>
+                `;
+                
+                let aiText = document.getElementById("ai-text");
+
+                function typeEffect() {
+                    if (i < explanation.length) {
+                        displayText += explanation.charAt(i);
+                        aiText.textContent = displayText;
+                        i++;
+                        setTimeout(typeEffect, 40);
+                    } else {
+                        aiText.classList.remove("typing");
+                    }
+                }
+                setTimeout(typeEffect, 500);
+
+                qrContainer.innerHTML = `<img src="${data.qr}" alt="QR Code for ${keyword}">`;
+
+                setTimeout(() => {
+                    resultDiv.classList.add("show");
+                    qrContainer.classList.add("show");
+                }, 100);
+            } else {
+                resultDiv.innerHTML = `<p class="title">No data found.</p>`;
+                resultDiv.classList.add("show");
+            }
+        }
+    </script>
+
+</body>
+</html>
+
